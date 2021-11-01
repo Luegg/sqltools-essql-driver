@@ -1,8 +1,8 @@
 import { ILanguageServerPlugin } from '@sqltools/types';
-import YourDriver from './driver';
 import { DRIVER_ALIASES } from './../constants';
+import YourDriver from './driver';
 
-const YourDriverPlugin: ILanguageServerPlugin = {
+const EsSqlDriverPlugin: ILanguageServerPlugin = {
   register(server) {
     DRIVER_ALIASES.forEach(({ value }) => {
       server.getContext().drivers.set(value, YourDriver as any);
@@ -10,4 +10,4 @@ const YourDriverPlugin: ILanguageServerPlugin = {
   }
 }
 
-export default YourDriverPlugin;
+export default EsSqlDriverPlugin;
