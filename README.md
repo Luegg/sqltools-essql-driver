@@ -1,1 +1,1 @@
-# Elasticsearch SQL Driver for SQLTools VS Code Plugin
+# Elasticsearch SQL Driver for the SQLTools VS Code Extenstion

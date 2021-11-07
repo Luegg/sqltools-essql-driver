@@ -31,7 +31,7 @@ export default class EsSqlDriver extends AbstractDriver<Client, any> implements 
 
   public query: (typeof AbstractDriver)['prototype']['query'] = async (queries, opt = {}) => {
     const db = await this.open();
-    const queriesResults = await db.sql.query({ format: "json", body: { query: queries } });
+    const queriesResults = await db.sql.query({ format: "json", body: { query: queries, fetch_size: 1000 } });
     const cols = queriesResults.body.columns.map(c => c.name);
 
     return [<NSDatabase.IResult>{
@@ -105,7 +105,27 @@ export default class EsSqlDriver extends AbstractDriver<Client, any> implements 
     return [];
   }
 
-  public getStaticCompletions: IConnectionDriver['getStaticCompletions'] = async () => {
-    return {};
+  private completions: { [w: string]: NSDatabase.IStaticCompletion } = null;
+  public async getStaticCompletions(): Promise<{ [w: string]: NSDatabase.IStaticCompletion }> {
+    if (this.completions == null) {
+      const keywords = ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'PIVOT', 'HAVING', 'ASC', 'DESC', 'LIMIT']
+        .map((kw) => <NSDatabase.IStaticCompletion>{
+          label: kw,
+          detail: 'keyword'
+        });
+
+      const functions = (await this.queryResults<any>('SHOW FUNCTIONS'))
+        .map((row) => <NSDatabase.IStaticCompletion>{
+          label: row.name,
+          detail: row.type
+        });
+
+      this.completions = keywords.concat(functions)
+        .reduce((dict, completion) => {
+          dict[completion.label] = completion
+          return dict;
+        }, {});
+    }
+    return this.completions;
   }
 }
